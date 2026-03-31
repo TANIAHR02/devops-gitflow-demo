@@ -1,3 +1,4 @@
 # Sistema de login básico
 Usuario y contraseña
 Validación de usuario implementada
+Nueva mejora en login
