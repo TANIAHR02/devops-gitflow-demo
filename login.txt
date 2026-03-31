@@ -1,1 +1,2 @@
 # Sistema de login básico
+Corrección de error en validación de usuario
