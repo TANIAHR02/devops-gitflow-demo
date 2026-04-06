@@ -2,3 +2,4 @@
 Usuario y contraseña
 Validación de usuario implementada
 Nueva mejora en login
+Corrección de error en validación de usuario
