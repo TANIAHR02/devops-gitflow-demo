@@ -20,6 +20,20 @@ docker build -t devops-app .
 docker compose up -d
 ```
 
+Alternativa sin construir imagen local (usa una imagen base y monta el código):
+
+```bash
+# ya configurado en docker-compose.yml — arranca instalando deps en el contenedor
+docker compose up -d
+```
+
+Si prefieres construir y usar una imagen propia (más reproducible):
+
+```bash
+docker build -t devops-app .
+docker compose up -d
+```
+
 - Git:
 
 ```bash
