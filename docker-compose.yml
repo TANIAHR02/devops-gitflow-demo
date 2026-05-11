@@ -1,6 +1,14 @@
 version: '3.8'
 services:
   app:
+    image: devops-app:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+
+  app-dev:
+    profiles: ["dev"]
     image: python:3.11-slim
     volumes:
       - ./:/app
@@ -9,4 +17,4 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=production
+      - FLASK_ENV=development

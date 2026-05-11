@@ -27,12 +27,17 @@ Alternativa sin construir imagen local (usa una imagen base y monta el código):
 docker compose up -d
 ```
 
-Si prefieres construir y usar una imagen propia (más reproducible):
 
 ```bash
 docker build -t devops-app .
 docker compose up -d
 ```
+Publicar imagen en GHCR (recomendado para rúbrica):
+
+1. En el repositorio de GitHub, añade el secret `GITHUB_TOKEN` (automático) o usa `CR_PAT` si prefieres token personal.
+2. El workflow `.github/workflows/build-and-push.yml` construye, testea y publica la imagen en `ghcr.io/<owner>/<repo>:latest` al hacer push a `main`.
+
+Localmente puedes usar la imagen publicada o la imagen local `devops-app:latest`.
 
 - Git:
 
