@@ -1,3 +1,32 @@
+# devops-gitflow-demo - EP2
+
+Instrucciones rápidas:
+
+- Ejecutar tests:
+
+```bash
+python -m pytest src/test/ -v
+```
+
+- Construir imagen Docker:
+
+```bash
+docker build -t devops-app .
+```
+
+- Levantar con Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+- Git:
+
+```bash
+git add .
+git commit -m "Add EP2 files"
+git push origin main
+```
 # DevOps Gitflow Demo
 
 ## Descripción
