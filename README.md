@@ -39,6 +39,10 @@ Publicar imagen en GHCR (recomendado para rúbrica):
 
 Localmente puedes usar la imagen publicada o la imagen local `devops-app:latest`.
 
+---
+Nota: este commit adicional dispara el workflow `build-and-push.yml` en GitHub Actions.
+Si la publicación a GHCR requiere permisos adicionales, habilita `write:packages` para `GITHUB_TOKEN` en la configuración del repositorio.
+
 - Git:
 
 ```bash
