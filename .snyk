@@ -1,0 +1,8 @@
+"# Snyk ignore file" 
+"version: v1.25.0" 
+"ignore:" 
+"  SNYK-PYTHON-STARLETTE-13733964:" 
+"  - '*':" 
+"      reason: Dependencia transitiva de fastapi, sin version compatible disponible" 
+"      expires: '2025-12-31T00:00:00.000Z'" 
+"patch: {}" 
