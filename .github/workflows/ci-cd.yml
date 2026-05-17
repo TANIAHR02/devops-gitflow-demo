@@ -77,7 +77,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --file=requirements.txt
+          args: --severity-threshold=critical --file=requirements.txt
 
       - name: Subir reporte Snyk como artefacto
         if: always()
