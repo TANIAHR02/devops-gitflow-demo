@@ -1,8 +1,49 @@
-version: '3.8'
+version: "3.9"
+
 services:
-  app:
-    build: .
+  # ── Microservicio principal ───────────────────────────────────────
+  usuarios-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: microservicio-usuarios
+    image: microservicio-usuarios:latest
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
-      - FLASK_ENV=production
+      - APP_ENV=production
+      - APP_PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - devops-network
+    labels:
+      - "com.devops.service=usuarios-api"
+      - "com.devops.version=1.0.0"
+      - "com.devops.team=DOY0101"
+
+  # ── Servicio de pruebas (solo en CI/testing) ─────────────────────
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test-runner
+    command: ["pytest", "tests/", "-v", "--tb=short"]
+    environment:
+      - APP_ENV=testing
+    networks:
+      - devops-network
+    profiles:
+      - testing    # Solo se ejecuta con: docker compose --profile testing up
+
+# ── Redes ─────────────────────────────────────────────────────────
+networks:
+  devops-network:
+    driver: bridge
+    name: devops-network

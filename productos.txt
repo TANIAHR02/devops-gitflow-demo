@@ -1,3 +1,4 @@
 Listado de productos
-Carrito de comprasgit 
+Carrito de compras
 Nueva funcionalidad de productos
+Corrección de error en validación de usuario
