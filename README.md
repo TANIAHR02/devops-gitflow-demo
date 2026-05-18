@@ -2,7 +2,7 @@
 
 > **Asignatura:** DOY0101 Ingeniería DevOps  
 > **Evaluación:** Parcial N°2 — Añadiéndole complejidad a nuestro pipeline  
-> **Equipo:** [Nombre Estudiante 1] · [Nombre Estudiante 2]  
+> **Equipo:** Tania Herrera · Camila Armijo 
 > **Tecnología:** Python + FastAPI · Docker · Docker Compose · GitHub Actions · Snyk  
 
 ---
@@ -297,6 +297,21 @@ Todo el contenido fue revisado, adaptado y validado por el equipo. Las justifica
 
 **Referencia de uso de IA:** https://bibliotecas.duoc.cl/ia
 
+## Reflexiones Individuales
+## Tania Herrera:
+Durante esta actividad aprendí a trabajar con Docker, Docker Compose y GitHub Actions para automatizar pruebas, seguridad y despliegues. También entendí mejor cómo funciona un pipeline CI/CD y la importancia de revisar el código antes de realizar un despliegue.
+
+Una de las dificultades fue configurar herramientas como Snyk y SonarCloud, ya que aparecieron errores relacionados con tokens, permisos y configuración de los workflows. Esto me ayudó a aprender a revisar errores y buscar soluciones sin afectar partes que ya estaban funcionando.
+
+Mi aporte al proyecto fue participar en la configuración del pipeline, integrar pruebas automáticas, realizar validaciones de seguridad y apoyar en la documentación. Esta experiencia me permitió entender mejor cómo se aplica DevOps en un proyecto real y la importancia de la automatización y la calidad del software.
+
+## Camila Armijo:
+Durante esta actividad aprendí cómo funciona un proceso DevOps y la importancia de revisar cada etapa antes del despliegue. También pude conocer el uso de Docker Compose y entender mejor cómo se conectan los servicios dentro del proyecto.
+
+Una de las dificultades fue interpretar algunos errores y revisar que el despliegue y las pruebas funcionaran correctamente. Esto ayudó a mejorar la validación del proyecto.
+
+Mi aporte estuvo en la revisión de resultados, validación del funcionamiento del sistema y apoyo en la documentación y evidencias del trabajo realizado.
+
 ---
 
-*Última actualización: 2025 — DOY0101 Ingeniería DevOps — EP2*
+*Última actualización: 2026 — DOY0101 Ingeniería DevOps — EP2*
