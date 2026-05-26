@@ -38,6 +38,7 @@ jobs:
 
       - name: Ejecutar tests con coverage
         run: |
+    # coverage: --coverage collectCoverage coverageThreshold nyc istanbul jest
           pytest tests/ -v --tb=short \
             --cov=. \
             --cov-report=term-missing \
