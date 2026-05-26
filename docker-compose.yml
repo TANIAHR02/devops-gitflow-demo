@@ -21,6 +21,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    volumes:
+      - app-data:/app/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
     networks:
       - devops-network
     labels:
@@ -37,10 +47,25 @@ services:
     command: ["pytest", "tests/", "-v", "--tb=short"]
     environment:
       - APP_ENV=testing
+    volumes:
+      - app-data:/app/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+        reservations:
+          cpus: "0.10"
+          memory: 64M
     networks:
       - devops-network
     profiles:
-      - testing    # Solo se ejecuta con: docker compose --profile testing up
+      - testing
+
+# ── Volúmenes ──────────────────────────────────────────────────────
+volumes:
+  app-data:
+    driver: local
 
 # ── Redes ─────────────────────────────────────────────────────────
 networks:
