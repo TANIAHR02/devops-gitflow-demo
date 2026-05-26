@@ -62,20 +62,11 @@ pre {
 <h3>🟠 Prioridad media</h3>
 <ul>
 <li>Coverage equivalente JaCoCo</li>
-<li>Volumes</li>
-</ul>
-<h3>🟢 Mejora avanzada</h3>
-<ul>
-<li>Limits CPU/MEM</li>
-<li>Reservations CPU/MEM</li>
 </ul>
 <hr>
 <h2>Roadmap sugerido para alcanzar el 100%</h2>
 <ol>
 <li>Coverage equivalente JaCoCo</li>
-<li>Volumes</li>
-<li>Limits CPU/MEM</li>
-<li>Reservations CPU/MEM</li>
 </ol>
 <hr>
 <h2>Cómo resolver los GAPs</h2>
@@ -89,45 +80,6 @@ pre {
 <h4>Ejemplo</h4>
 <pre><code>
 npm test -- --coverage
-</code></pre>
-<h3>Volumes</h3>
-<p>Impacto: No existe persistencia datos.</p>
-<h4>Cómo resolver</h4>
-<ul>
-<li>Agregar volumes persistentes</li>
-</ul>
-<h4>Ejemplo</h4>
-<pre><code>
-volumes:
-  - postgres_data:/var/lib/postgresql/data
-</code></pre>
-<h3>Limits CPU/MEM</h3>
-<p>Impacto: No existen límites recursos.</p>
-<h4>Cómo resolver</h4>
-<ul>
-<li>Agregar deploy.resources.limits</li>
-</ul>
-<h4>Ejemplo</h4>
-<pre><code>
-deploy:
-  resources:
-    limits:
-      cpus: &#39;0.50&#39;
-      memory: 512M
-</code></pre>
-<h3>Reservations CPU/MEM</h3>
-<p>Impacto: No existen reservas recursos.</p>
-<h4>Cómo resolver</h4>
-<ul>
-<li>Agregar reservations</li>
-</ul>
-<h4>Ejemplo</h4>
-<pre><code>
-deploy:
-  resources:
-    reservations:
-      cpus: &#39;0.25&#39;
-      memory: 256M
 </code></pre>
 <hr>
 <h2>Tabla evaluación</h2>
@@ -303,7 +255,7 @@ deploy:
 <tr>
 <td>IE5</td>
 <td>Volumes</td>
-<td>⚠️ MEJORA PENDIENTE</td>
+<td>✅ IMPLEMENTADO</td>
 </tr>
 <tr>
 <td>IE5</td>
@@ -313,12 +265,12 @@ deploy:
 <tr>
 <td>IE3</td>
 <td>Limits CPU/MEM</td>
-<td>⚠️ MEJORA PENDIENTE</td>
+<td>✅ IMPLEMENTADO</td>
 </tr>
 <tr>
 <td>IE3</td>
 <td>Reservations CPU/MEM</td>
-<td>⚠️ MEJORA PENDIENTE</td>
+<td>✅ IMPLEMENTADO</td>
 </tr>
 <tr>
 <td>IE4</td>
@@ -506,18 +458,15 @@ Keywords:
 </code></pre>
 <h3>IE5 - Volumes</h3>
 <ul>
-<li><p>Estado: ⚠️ MEJORA PENDIENTE</p>
+<li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: No tiene volumes</p>
+<li><p>Detalle: Tiene volumes</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
 </ul>
 <pre><code>docker-compose revisado
 </code></pre>
-<ul>
-<li>Qué falta: Agregar volumes</li>
-</ul>
 <h3>IE5 - Networks</h3>
 <ul>
 <li><p>Estado: ✅ IMPLEMENTADO</p>
@@ -531,32 +480,26 @@ Keywords:
 </code></pre>
 <h3>IE3 - Limits CPU/MEM</h3>
 <ul>
-<li><p>Estado: ⚠️ MEJORA PENDIENTE</p>
+<li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: No tiene limits</p>
+<li><p>Detalle: Tiene limits</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
 </ul>
 <pre><code>docker-compose revisado
 </code></pre>
-<ul>
-<li>Qué falta: Agregar deploy.resources.limits</li>
-</ul>
 <h3>IE3 - Reservations CPU/MEM</h3>
 <ul>
-<li><p>Estado: ⚠️ MEJORA PENDIENTE</p>
+<li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: No tiene reservations</p>
+<li><p>Detalle: Tiene reservations</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
 </ul>
 <pre><code>docker-compose revisado
 </code></pre>
-<ul>
-<li>Qué falta: Agregar reservations</li>
-</ul>
 <h3>IE4 - README documentado</h3>
 <ul>
 <li><p>Estado: ✅ IMPLEMENTADO</p>

@@ -7,21 +7,12 @@ Las siguientes mejoras ayudarán a incrementar la madurez DevOps del repositorio
 ### 🟠 Prioridad media
 
 - Coverage equivalente JaCoCo
-- Volumes
-
-### 🟢 Mejora avanzada
-
-- Limits CPU/MEM
-- Reservations CPU/MEM
 
 ---
 
 ## Roadmap sugerido para alcanzar el 100%
 
 1. Coverage equivalente JaCoCo
-2. Volumes
-3. Limits CPU/MEM
-4. Reservations CPU/MEM
 
 ---
 
@@ -41,63 +32,6 @@ Impacto: No existe medición de cobertura.
 ```
 
 npm test -- --coverage
-
-```
-
-### Volumes
-
-Impacto: No existe persistencia datos.
-
-#### Cómo resolver
-
-- Agregar volumes persistentes
-
-#### Ejemplo
-
-```
-
-volumes:
-  - postgres_data:/var/lib/postgresql/data
-
-```
-
-### Limits CPU/MEM
-
-Impacto: No existen límites recursos.
-
-#### Cómo resolver
-
-- Agregar deploy.resources.limits
-
-#### Ejemplo
-
-```
-
-deploy:
-  resources:
-    limits:
-      cpus: '0.50'
-      memory: 512M
-
-```
-
-### Reservations CPU/MEM
-
-Impacto: No existen reservas recursos.
-
-#### Cómo resolver
-
-- Agregar reservations
-
-#### Ejemplo
-
-```
-
-deploy:
-  resources:
-    reservations:
-      cpus: '0.25'
-      memory: 256M
 
 ```
 
@@ -151,10 +85,10 @@ deploy:
 | IE5 | Docker Compose/K8s | ✅ IMPLEMENTADO |
 | IE5 | Múltiples servicios | ✅ IMPLEMENTADO |
 | IE5 | Healthchecks | ✅ IMPLEMENTADO |
-| IE5 | Volumes | ⚠️ MEJORA PENDIENTE |
+| IE5 | Volumes | ✅ IMPLEMENTADO |
 | IE5 | Networks | ✅ IMPLEMENTADO |
-| IE3 | Limits CPU/MEM | ⚠️ MEJORA PENDIENTE |
-| IE3 | Reservations CPU/MEM | ⚠️ MEJORA PENDIENTE |
+| IE3 | Limits CPU/MEM | ✅ IMPLEMENTADO |
+| IE3 | Reservations CPU/MEM | ✅ IMPLEMENTADO |
 | IE4 | README documentado | ✅ IMPLEMENTADO |
 
 
@@ -339,15 +273,13 @@ docker-compose revisado
 
 ### IE5 - Volumes
 
-- Estado: ⚠️ MEJORA PENDIENTE
-- Detalle: No tiene volumes
+- Estado: ✅ IMPLEMENTADO
+- Detalle: Tiene volumes
 
 - Evidencia:
 ```
 docker-compose revisado
 ```
-
-- Qué falta: Agregar volumes
 
 
 ### IE5 - Networks
@@ -363,28 +295,24 @@ docker-compose revisado
 
 ### IE3 - Limits CPU/MEM
 
-- Estado: ⚠️ MEJORA PENDIENTE
-- Detalle: No tiene limits
+- Estado: ✅ IMPLEMENTADO
+- Detalle: Tiene limits
 
 - Evidencia:
 ```
 docker-compose revisado
 ```
-
-- Qué falta: Agregar deploy.resources.limits
 
 
 ### IE3 - Reservations CPU/MEM
 
-- Estado: ⚠️ MEJORA PENDIENTE
-- Detalle: No tiene reservations
+- Estado: ✅ IMPLEMENTADO
+- Detalle: Tiene reservations
 
 - Evidencia:
 ```
 docker-compose revisado
 ```
-
-- Qué falta: Agregar reservations
 
 
 ### IE4 - README documentado
