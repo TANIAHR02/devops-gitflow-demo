@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Python 3.11
         uses: actions/setup-python@v5
@@ -62,7 +62,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Python 3.11
         uses: actions/setup-python@v5
@@ -100,7 +100,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -140,7 +140,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
