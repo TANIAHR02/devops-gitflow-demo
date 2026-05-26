@@ -4,37 +4,6 @@
 
 Las siguientes mejoras ayudarán a incrementar la madurez DevOps del repositorio.
 
-### 🟠 Prioridad media
-
-- Coverage equivalente JaCoCo
-
----
-
-## Roadmap sugerido para alcanzar el 100%
-
-1. Coverage equivalente JaCoCo
-
----
-
-## Cómo resolver los GAPs
-
-### Coverage equivalente JaCoCo
-
-Impacto: No existe medición de cobertura.
-
-#### Cómo resolver
-
-- Agregar coverage
-- Publicar cobertura pipeline
-
-#### Ejemplo
-
-```
-
-npm test -- --coverage
-
-```
-
 ---
 
 ## Tabla evaluación
@@ -80,7 +49,7 @@ npm test -- --coverage
 | IE3 | Bloqueos seguridad needs | ✅ IMPLEMENTADO |
 | IE4 | Deploy automático | ✅ IMPLEMENTADO |
 | IE2 | Tecnología detectada | ✅ IMPLEMENTADO |
-| IE2 | Coverage equivalente JaCoCo | ⚠️ MEJORA PENDIENTE |
+| IE2 | Coverage equivalente JaCoCo | ✅ IMPLEMENTADO |
 | IE3 | Dependabot configurado | ✅ IMPLEMENTADO |
 | IE5 | Docker Compose/K8s | ✅ IMPLEMENTADO |
 | IE5 | Múltiples servicios | ✅ IMPLEMENTADO |
@@ -208,8 +177,8 @@ Archivos proyecto
 
 ### IE2 - Coverage equivalente JaCoCo
 
-- Estado: ⚠️ MEJORA PENDIENTE
-- Detalle: Coverage NO detectado para node
+- Estado: ✅ IMPLEMENTADO
+- Detalle: Coverage detectado para node
 
 - Evidencia:
 ```
@@ -223,8 +192,6 @@ Keywords:
 --coverage, collectCoverage, coverageThreshold, nyc, istanbul, jest
       
 ```
-
-- Qué falta: Agregar Jest Coverage / NYC
 
 
 ### IE3 - Dependabot configurado
