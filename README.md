@@ -1,4 +1,4 @@
-# 🚀 Microservicio de Gestión de Usuarios — Pipeline CI/CD
+#  Microservicio de Gestión de Usuarios — Pipeline CI/CD
 
 > **Asignatura:** DOY0101 Ingeniería DevOps  
 > **Evaluación:** Parcial N°2 — Añadiéndole complejidad a nuestro pipeline  
@@ -7,7 +7,7 @@
 
 ---
 
-## 📋 Tabla de Contenidos
+##  Tabla de Contenidos
 
 1. [Descripción del Proyecto](#descripción-del-proyecto)
 2. [Arquitectura del Pipeline CI/CD](#arquitectura-del-pipeline-cicd)
@@ -21,7 +21,7 @@
 
 ---
 
-## 📦 Descripción del Proyecto
+##  Descripción del Proyecto
 
 Este repositorio es la continuación de la EP1. Sobre la base del microservicio REST de gestión de usuarios (FastAPI/Python) y el flujo GitFlow ya configurado, la EP2 incorpora:
 
@@ -33,7 +33,7 @@ Este repositorio es la continuación de la EP1. Sobre la base del microservicio 
 
 ---
 
-## ⚙️ Arquitectura del Pipeline CI/CD
+##  Arquitectura del Pipeline CI/CD
 
 El pipeline tiene **4 jobs que se ejecutan en cadena**. Si uno falla, los siguientes no se ejecutan, garantizando que solo código seguro y probado llegue al despliegue.
 
@@ -43,25 +43,25 @@ Push a develop / PR a main
           ▼
   ┌───────────────┐
   │  JOB 1: Test  │  pytest + flake8
-  │  🧪 Pruebas   │
+  │     Pruebas   │
   └──────┬────────┘
-         │ ✅ pasa
+         │  pasa
          ▼
   ┌───────────────┐
   │  JOB 2:       │  Snyk — escaneo de dependencias
-  │  🔒 Seguridad │  BLOQUEO si hay vulnerabilidades HIGH/CRITICAL
+  │     Seguridad │  BLOQUEO si hay vulnerabilidades HIGH/CRITICAL
   └──────┬────────┘
-         │ ✅ pasa
+         │  pasa
          ▼
   ┌───────────────┐
   │  JOB 3: Build │  docker build — imagen multi-stage
-  │  🐳 Docker    │
+  │     Docker    │
   └──────┬────────┘
-         │ ✅ pasa
+         │  pasa
          ▼
   ┌───────────────┐
   │  JOB 4: Deploy│  docker compose up + health check + smoke test
-  │  🚀 Entorno   │
+  │     Entorno   │
   └───────────────┘
 ```
 
@@ -78,7 +78,7 @@ Ubicación: `.github/workflows/ci-cd.yml`
 
 ---
 
-## 🐳 Contenedores — Docker
+##  Contenedores — Docker
 
 ### Estrategia multi-stage
 
@@ -153,7 +153,7 @@ docker compose down
 
 ---
 
-## 🧪 Pruebas Automatizadas
+##  Pruebas Automatizadas
 
 Las pruebas se ejecutan en el **Job 1** del pipeline (primer paso), garantizando que ningún código sin pruebas llegue a las etapas siguientes.
 
@@ -182,7 +182,7 @@ Las pruebas se ejecutan en el **Job 1** del pipeline (primer paso), garantizando
 
 ---
 
-## 🔒 Análisis de Seguridad — Snyk
+##  Análisis de Seguridad — Snyk
 
 El análisis de seguridad corre en el **Job 2**, después de los tests y **antes** del build de Docker. Esto garantiza que no se construya ni despliegue una imagen con vulnerabilidades conocidas.
 
@@ -211,7 +211,7 @@ args: --severity-threshold=high
 
 ---
 
-## 📊 Trazabilidad y Calidad
+##  Trazabilidad y Calidad
 
 Cada ejecución del pipeline genera un **resumen de trazabilidad** visible en la pestaña Actions de GitHub:
 
@@ -247,7 +247,7 @@ Ninguna etapa puede saltarse. El encadenamiento `needs:` en el workflow garantiz
 
 ---
 
-## 💻 Cómo ejecutar localmente
+##  Cómo ejecutar localmente
 
 ### Sin Docker
 
@@ -285,13 +285,13 @@ curl http://localhost:8000/health
 
 ---
 
-## 🤖 Uso de IA
+##  Uso de IA
 
 En el desarrollo de este proyecto se utilizó **Claude (Anthropic)** como apoyo para:
 
 - Generación del esqueleto del `Dockerfile` y `docker-compose.yml`
 - Estructura inicial del workflow de GitHub Actions
-- Revisión y mejora de redacción técnica en el README
+
 
 Todo el contenido fue revisado, adaptado y validado por el equipo. Las justificaciones técnicas, decisiones de arquitectura (elección de Docker Compose sobre Kubernetes, estrategia multi-stage, política de bloqueo de Snyk) y reflexiones individuales fueron redactadas por los integrantes sin asistencia de IA.
 
