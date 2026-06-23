@@ -44,7 +44,7 @@
         <rewrite-migrate.version>3.31.0</rewrite-migrate.version>
         <rewrite-spring.version>6.13.0</rewrite-spring.version>
         <rewrite-static.version>2.15.0</rewrite-static.version>
-        <spring-cloud-contract-verifier.version>4.2.3</spring-cloud-contract-verifier.version>
+        <spring-cloud-contract-verifier.version>5.0.3</spring-cloud-contract-verifier.version>
 
         <!-- Byte Buddy experimental flag (requerido para Java 21+) -->
         <bytebuddy.arg>-Dnet.bytebuddy.experimental=true</bytebuddy.arg>
