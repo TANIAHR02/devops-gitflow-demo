@@ -112,11 +112,11 @@ Dockerfile revisado
 ### IE4 - Pipeline GitHub Actions
 
 - Estado: ✅ IMPLEMENTADO
-- Detalle: 4 workflow(s) detectados
+- Detalle: 2 workflow(s) detectados
 
 - Evidencia:
 ```
-/home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ep02-devops-continuous-feedback.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci-cd.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/build-and-push.yml
+/home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ep03-devops-continuous-feedback.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci-cd-pipeline.yml
 ```
 
 
@@ -167,7 +167,7 @@ Workflow revisado
 ### IE2 - Tecnología detectada
 
 - Estado: ✅ IMPLEMENTADO
-- Detalle: node
+- Detalle: java
 
 - Evidencia:
 ```
@@ -178,18 +178,18 @@ Archivos proyecto
 ### IE2 - Coverage equivalente JaCoCo
 
 - Estado: ✅ IMPLEMENTADO
-- Detalle: Coverage detectado para node
+- Detalle: Coverage detectado para java
 
 - Evidencia:
 ```
 
-Tecnología: node
+Tecnología: java
 
 Coverage esperado:
-Jest Coverage / NYC
+JaCoCo
 
 Keywords:
---coverage, collectCoverage, coverageThreshold, nyc, istanbul, jest
+jacoco, jacocoTestReport, jacocoTestCoverageVerification, toolVersion, minimum =, violationRules
       
 ```
 
@@ -223,7 +223,7 @@ docker-compose.yml
 
 - Evidencia:
 ```
-usuarios-api, test-runner
+mysql, app
 ```
 
 

@@ -306,12 +306,12 @@ pre {
 <ul>
 <li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: 4 workflow(s) detectados</p>
+<li><p>Detalle: 2 workflow(s) detectados</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
 </ul>
-<pre><code>/home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ep02-devops-continuous-feedback.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci-cd.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/build-and-push.yml
+<pre><code>/home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ep03-devops-continuous-feedback.yml, /home/runner/work/devops-gitflow-demo/devops-gitflow-demo/.github/workflows/ci-cd-pipeline.yml
 </code></pre>
 <h3>IE2 - Pipeline ejecuta tests</h3>
 <ul>
@@ -361,7 +361,7 @@ pre {
 <ul>
 <li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: node</p>
+<li><p>Detalle: java</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
@@ -372,19 +372,19 @@ pre {
 <ul>
 <li><p>Estado: ✅ IMPLEMENTADO</p>
 </li>
-<li><p>Detalle: Coverage detectado para node</p>
+<li><p>Detalle: Coverage detectado para java</p>
 </li>
 <li><p>Evidencia:</p>
 </li>
 </ul>
 <pre><code>
-Tecnología: node
+Tecnología: java
 
 Coverage esperado:
-Jest Coverage / NYC
+JaCoCo
 
 Keywords:
---coverage, collectCoverage, coverageThreshold, nyc, istanbul, jest
+jacoco, jacocoTestReport, jacocoTestCoverageVerification, toolVersion, minimum =, violationRules
       
 </code></pre>
 <h3>IE3 - Dependabot configurado</h3>
@@ -418,7 +418,7 @@ Keywords:
 <li><p>Evidencia:</p>
 </li>
 </ul>
-<pre><code>usuarios-api, test-runner
+<pre><code>mysql, app
 </code></pre>
 <h3>IE5 - Healthchecks</h3>
 <ul>
