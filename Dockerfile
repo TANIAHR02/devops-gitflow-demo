@@ -1,43 +1,45 @@
-# ── Etapa 1: builder ──────────────────────────────────────────────
-FROM python:3.11-slim AS builder
+# ============================================================
+# BUILD STAGE
+# ============================================================
+
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
 
 WORKDIR /app
 
-# Copiar solo requirements primero (aprovecha caché de Docker)
-COPY requirements.txt .
+# Copiar archivos de build y wrapper (para cache de dependencias)
+COPY pom.xml ./
+COPY .mvn ./.mvn
+COPY mvnw ./
 
-# Instalar dependencias en carpeta local para copiar después
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --prefix=/install -r requirements.txt
-
-# ── Etapa 2: imagen final ─────────────────────────────────────────
-FROM python:3.11-slim
-
-# Metadatos de la imagen
-LABEL maintainer="Equipo DevOps DOY0101"
-LABEL version="1.0.0"
-LABEL description="Microservicio de Gestión de Usuarios - FastAPI"
-
-WORKDIR /app
-
-# Copiar dependencias instaladas desde el builder
-COPY --from=builder /install /usr/local
+# Descargar dependencias (aprovecha cache de Docker)
+RUN mvn dependency:go-offline -B || true
 
 # Copiar código fuente
-COPY . .
+COPY src ./src
 
-# Crear usuario no-root por seguridad (buena práctica DevSecOps)
-RUN addgroup --system appgroup && \
-    adduser --system --ingroup appgroup appuser
+# Compilar y empaquetar (sin tests en esta etapa)
+RUN mvn clean package -DskipTests -B
+
+# ============================================================
+# RUNTIME STAGE
+# ============================================================
+
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+# Usuario no-root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=build /app/target/alumnos-app-1.0.0.jar app.jar
+
+RUN chown appuser:appgroup app.jar
 
 USER appuser
 
-# Exponer puerto de la aplicación
-EXPOSE 8000
+EXPOSE 8080
 
-# Health check para Docker y Docker Compose
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget --spider -q http://localhost:8080/alumnos || exit 1
 
-# Comando de inicio
-CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

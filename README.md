@@ -1,317 +1,699 @@
-#  Microservicio de Gestión de Usuarios — Pipeline CI/CD
+# Alumnos API — version00 (Gradle)
 
-> **Asignatura:** DOY0101 Ingeniería DevOps  
-> **Evaluación:** Parcial N°2 — Añadiéndole complejidad a nuestro pipeline  
-> **Equipo:** Tania Herrera · Camila Armijo 
-> **Tecnología:** Python + FastAPI · Docker · Docker Compose · GitHub Actions · Snyk  
+REST API para gestión de alumnos construida con Spring Boot 3, siguiendo **arquitectura limpia (Clean Architecture)** y una pirámide de tests completa.
 
 ---
 
-##  Tabla de Contenidos
+## Tabla de contenidos
 
-1. [Descripción del Proyecto](#descripción-del-proyecto)
-2. [Arquitectura del Pipeline CI/CD](#arquitectura-del-pipeline-cicd)
-3. [Contenedores — Docker](#contenedores--docker)
-4. [Orquestación — Docker Compose](#orquestación--docker-compose)
-5. [Pruebas Automatizadas](#pruebas-automatizadas)
-6. [Análisis de Seguridad — Snyk](#análisis-de-seguridad--snyk)
-7. [Trazabilidad y Calidad](#trazabilidad-y-calidad)
-8. [Cómo ejecutar localmente](#cómo-ejecutar-localmente)
-9. [Uso de IA](#uso-de-ia)
-
----
-
-##  Descripción del Proyecto
-
-Este repositorio es la continuación de la EP1. Sobre la base del microservicio REST de gestión de usuarios (FastAPI/Python) y el flujo GitFlow ya configurado, la EP2 incorpora:
-
-- **Contenerización** con Docker (imagen multi-stage optimizada)
-- **Orquestación** con Docker Compose
-- **Pipeline CI/CD completo** en GitHub Actions con 4 jobs encadenados
-- **Análisis de seguridad** con Snyk + Dependabot
-- **Despliegue automatizado** en entorno simulado
+- [Stack tecnológico](#stack-tecnológico)
+- [Arquitectura limpia](#arquitectura-limpia)
+- [Diseño del sistema](#diseño-del-sistema)
+- [Requisitos previos](#requisitos-previos)
+- [Configuración local](#configuración-local)
+- [Calidad de código](#calidad-de-código)
+- [Operación con Docker](#operación-con-docker)
+- [API Reference](#api-reference)
+- [Pirámide de tests](#pirámide-de-tests)
+- [Cobertura y análisis estático](#cobertura-y-análisis-estático)
+- [CI/CD](#cicd)
+- [Orquestación con Kubernetes](#orquestación-con-kubernetes)
 
 ---
 
-##  Arquitectura del Pipeline CI/CD
+## Stack tecnológico
 
-El pipeline tiene **4 jobs que se ejecutan en cadena**. Si uno falla, los siguientes no se ejecutan, garantizando que solo código seguro y probado llegue al despliegue.
+| Categoría | Tecnología | Versión |
+|---|---|---|
+| Lenguaje | Java | 21 |
+| Framework | Spring Boot | 3.4.5 |
+| Build tool | Gradle | 9.x |
+| Persistencia | Spring Data JPA + Hibernate | 6.x |
+| Base de datos | H2 (in-memory) | 2.x |
+| Seguridad | Spring Security | 6.x |
+| Documentación API | SpringDoc OpenAPI (Swagger) | 2.5.0 |
+| Mapeo de objetos | Lombok | 1.18.x |
+| Tests unitarios | JUnit 5 + Mockito | 5.x / 5.x |
+| Tests de integración | Spring Boot Test / MockMvc | 3.4.5 |
+| Tests de repositorio | @DataJpaTest | 3.4.5 |
+| Tests de aceptación | Cucumber | 7.20.1 |
+| Tests de contrato | Spring Cloud Contract | 4.2.1 |
+| Cobertura | JaCoCo | 0.8.13 |
+| Mutation testing | PIT (Pitest) | 1.19.x |
+| Refactoring automático | OpenRewrite | 6.30.0 |
+| Formato de código | Spotless + Google Java Format | 7.0.4 / 1.25.2 |
+| Análisis estático | PMD | 7.13.0 |
+| Análisis SAST | SonarCloud | — |
+| Contenedores | Docker + Docker Compose | — |
+
+---
+
+## Arquitectura limpia
+
+El proyecto implementa **Clean Architecture** (también conocida como arquitectura hexagonal o ports & adapters). El principio central es la **Regla de Dependencia**: las capas internas no conocen nada de las capas externas.
+
+### Capas y responsabilidades
 
 ```
-Push a develop / PR a main
-          │
-          ▼
-  ┌───────────────┐
-  │  JOB 1: Test  │  pytest + flake8
-  │     Pruebas   │
-  └──────┬────────┘
-         │  pasa
-         ▼
-  ┌───────────────┐
-  │  JOB 2:       │  Snyk — escaneo de dependencias
-  │     Seguridad │  BLOQUEO si hay vulnerabilidades HIGH/CRITICAL
-  └──────┬────────┘
-         │  pasa
-         ▼
-  ┌───────────────┐
-  │  JOB 3: Build │  docker build — imagen multi-stage
-  │     Docker    │
-  └──────┬────────┘
-         │  pasa
-         ▼
-  ┌───────────────┐
-  │  JOB 4: Deploy│  docker compose up + health check + smoke test
-  │     Entorno   │
-  └───────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                        INFRASTRUCTURE                               │
+│   (Frameworks, DB, HTTP, Spring, JPA, Swagger)                      │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                      APPLICATION                            │   │
+│   │   (Casos de uso, orquestación, reglas de aplicación)        │   │
+│   │                                                             │   │
+│   │   ┌─────────────────────────────────────────────────────┐   │   │
+│   │   │                    DOMAIN                           │   │   │
+│   │   │   (Entidades, reglas de negocio puras)              │   │   │
+│   │   │   Sin dependencias externas                         │   │   │
+│   │   └─────────────────────────────────────────────────────┘   │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Triggers del pipeline
+### Mapeo al código fuente
 
-| Evento | Rama | Jobs que se ejecutan |
-|--------|------|---------------------|
-| `push` | `develop` | Test → Security → Build → Deploy |
-| `pull_request` | `main` | Test → Security → Build → Deploy |
+```
+src/main/java/cl/duocuc/alumnos/
+│
+├── domain/                         ← CAPA DE DOMINIO (núcleo)
+│   └── Alumno.java                   Entidad pura: solo datos y reglas de negocio.
+│                                     Sin anotaciones de Spring, JPA ni Lombok.
+│
+├── application/                    ← CAPA DE APLICACIÓN (casos de uso)
+│   └── AlumnoService.java            Orquesta el dominio. Depende solo de interfaces
+│                                     (puertos). No conoce HTTP ni JPA.
+│
+├── config/                         ← CONFIGURACIÓN TRANSVERSAL
+│   ├── GlobalExceptionHandler.java   Manejo centralizado de errores HTTP.
+│   └── SecurityConfig.java           Configuración de Spring Security.
+│
+└── infrastructure/                 ← CAPA DE INFRAESTRUCTURA (adaptadores)
+    │
+    ├── controller/                   ADAPTADOR DE ENTRADA (driving)
+    │   └── AlumnoController.java     Recibe HTTP → llama al servicio → retorna JSON.
+    │
+    ├── entity/                       ADAPTADOR DE SALIDA (driven)
+    │   └── AlumnoEntity.java         Representación JPA de Alumno para la BD.
+    │
+    ├── mapper/                       TRADUCTOR entre capas
+    │   └── AlumnoMapper.java         Convierte Alumno (dominio) ↔ AlumnoEntity (JPA).
+    │
+    ├── repository/                   PUERTO DE SALIDA
+    │   └── AlumnoRepository.java     Interfaz Spring Data — la implementación la provee JPA.
+    │
+    └── config/                       CONFIGURACIÓN DE INFRAESTRUCTURA
+        ├── OpenApiConfig.java        Metadatos de la documentación OpenAPI.
+        └── WebConfig.java            Configuración de recursos estáticos (ReDoc).
+```
 
-### Archivo del workflow
+### Flujo de una petición
 
-Ubicación: `.github/workflows/ci-cd.yml`
+```
+HTTP Request
+    │
+    ▼
+AlumnoController          ← Infrastructure (adaptador entrada)
+    │  llama a
+    ▼
+AlumnoService             ← Application (caso de uso)
+    │  usa puerto
+    ▼
+AlumnoRepository          ← Puerto de salida (interfaz)
+    │  implementado por
+    ▼
+Spring Data JPA           ← Infrastructure (adaptador salida)
+    │  persiste en
+    ▼
+H2 / Base de datos
+```
+
+### Regla de dependencia
+
+| Capa | Puede depender de | No puede depender de |
+|---|---|---|
+| `domain` | Nada externo | `application`, `infrastructure`, Spring |
+| `application` | `domain` | `infrastructure`, Spring MVC, JPA |
+| `infrastructure` | `application`, `domain` | — (puede usar todo) |
 
 ---
 
-##  Contenedores — Docker
+## Diseño del sistema
 
-### Estrategia multi-stage
+### Diagrama de componentes
 
-El `Dockerfile` usa **dos etapas** para optimizar la imagen final:
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                         Cliente HTTP                             │
+│              (curl / Swagger UI / Cucumber / Tests)              │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │ HTTP/REST
+                           ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                    Spring Boot Application                       │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  SecurityConfig          GlobalExceptionHandler             │ │
+│  │  (Spring Security)       (HTTP 4xx/5xx unificados)          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│  ┌──────────────────────┐    ┌──────────────────────────────┐   │
+│  │  AlumnoController    │───▶│  AlumnoService               │   │
+│  │  @RestController     │    │  @Service                    │   │
+│  │  GET  /alumnos       │    │  listar()                    │   │
+│  │  POST /alumnos       │    │  crear()                     │   │
+│  │  PUT  /alumnos/{id}  │    │  actualizar()                │   │
+│  │  DELETE /alumnos/{id}│    │  eliminar()                  │   │
+│  │  GET  /alumnos/export│    │  exportar()                  │   │
+│  │  POST /alumnos/import│    │  importar()                  │   │
+│  └──────────────────────┘    └──────────────┬───────────────┘   │
+│                                             │                   │
+│  ┌──────────────────────┐    ┌──────────────▼───────────────┐   │
+│  │  AlumnoMapper        │◀──▶│  AlumnoRepository            │   │
+│  │  domain ↔ entity     │    │  JpaRepository<AlumnoEntity> │   │
+│  └──────────────────────┘    └──────────────┬───────────────┘   │
+│                                             │                   │
+│                              ┌──────────────▼───────────────┐   │
+│                              │  H2 In-Memory Database       │   │
+│                              │  (dev/test: jdbc:h2:mem:)    │   │
+│                              └──────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────┘
+```
 
-| Etapa | Base | Propósito |
-|-------|------|-----------|
-| `builder` | `python:3.11-slim` | Instalar dependencias |
-| `final` | `python:3.11-slim` | Solo el código y las deps instaladas |
+### Modelo de datos
 
-Esto reduce el tamaño de la imagen final eliminando herramientas de compilación innecesarias.
+```
+┌─────────────────────────────┐
+│         alumno_entity       │
+├─────────────────────────────┤
+│ id        BIGINT  PK AUTO   │
+│ nombre    VARCHAR(255)      │
+│ apellido  VARCHAR(255)      │
+└─────────────────────────────┘
+```
 
-### Buenas prácticas aplicadas
+### Perfiles de configuración
 
-- ✅ **Usuario no-root:** el contenedor corre como `appuser`, no como `root` (seguridad)
-- ✅ **Health check:** Docker verifica que el servicio responde en `/health`
-- ✅ **Caché de capas:** `requirements.txt` se copia antes del código para aprovechar la caché de Docker
-- ✅ **Imagen slim:** base mínima sin paquetes innecesarios
+| Perfil | Base de datos | Log level | Uso |
+|---|---|---|---|
+| `default` | H2 in-memory | INFO | Desarrollo rápido |
+| `dev` | H2 in-memory + H2 Console | DEBUG | Desarrollo con consola BD |
+| `prod` | H2 in-memory | WARN | Simulación producción |
 
-### Comandos útiles
+---
+
+## Requisitos previos
+
+| Herramienta | Versión mínima | Verificar |
+|---|---|---|
+| JDK | 21 | `java -version` |
+| Gradle | 9.x (o usar `./gradlew`) | `gradle -version` |
+| Docker | 24.x | `docker -v` |
+| Docker Compose | 2.x | `docker compose version` |
+| Git | 2.x | `git --version` |
+
+---
+
+## Configuración local
+
+### 1. Clonar el repositorio
+
+```bash
+git clone <url-del-repositorio>
+cd jobs/java/version00
+```
+
+### 2. Compilar el proyecto
+
+```bash
+# Con el wrapper incluido (recomendado)
+./gradlew build -x test
+
+# O con Gradle instalado globalmente
+gradle build -x test
+```
+
+### 3. Ejecutar la aplicación
+
+```bash
+./gradlew bootRun
+```
+
+La aplicación levanta en `http://localhost:8080`.
+
+### 4. Verificar que funciona
+
+```bash
+curl http://localhost:8080/alumnos
+# Respuesta esperada: []
+```
+
+### 5. Acceder a la documentación interactiva
+
+| Interfaz | URL |
+|---|---|
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| OpenAPI JSON | http://localhost:8080/v3/api-docs |
+| ReDoc | http://localhost:8080/redoc.html |
+| H2 Console | http://localhost:8080/h2-console |
+
+> **H2 Console:** JDBC URL `jdbc:h2:mem:testdb`, usuario `sa`, sin contraseña.
+
+### 6. Perfiles disponibles
+
+```bash
+# Perfil de desarrollo (activa H2 Console y logs DEBUG)
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Perfil de producción
+./gradlew bootRun --args='--spring.profiles.active=prod'
+```
+
+---
+
+## Calidad de código
+
+El proyecto incluye tres herramientas que se ejecutan **antes de compilar**, en el job `code-quality` del pipeline CI. Esto garantiza que el código llega limpio a SonarCloud.
+
+```
+code-quality → build-and-test → security (SonarCloud + Snyk) → docker → deploy
+```
+
+### OpenRewrite — Refactoring automático
+
+Aplica recetas de modernización y limpieza de código de forma automática.
+
+**Recetas activas:**
+
+| Receta | Qué hace |
+|---|---|
+| `UpgradeToJava21` | Moderniza sintaxis a Java 21 (records, pattern matching, etc.) |
+| `UpgradeSpringBoot_3_4` | Migra APIs deprecadas de Spring Boot |
+| `CommonStaticAnalysis` | Elimina código muerto y patrones problemáticos |
+| `UnnecessaryThrows` | Limpia declaraciones `throws` innecesarias |
+| `SimplifyBooleanExpression` | Simplifica condiciones booleanas redundantes |
+| `RemoveUnusedImports` | Elimina imports sin usar |
+
+```bash
+# Ver qué cambiaría (modo CI — no modifica archivos)
+./gradlew rewriteDryRun
+
+# Aplicar cambios automáticamente (modo local)
+./gradlew rewriteRun
+```
+
+### Spotless — Formato de código
+
+Garantiza formato consistente usando **Google Java Format** con estilo AOSP (4 espacios).
+
+```bash
+# Verificar formato (modo CI — falla si hay diferencias)
+./gradlew spotlessCheck
+
+# Aplicar formato automáticamente (modo local)
+./gradlew spotlessApply
+```
+
+### PMD — Análisis estático de reglas
+
+Valida reglas de calidad, seguridad y buenas prácticas. El ruleset está en `config/pmd/ruleset.xml`.
+
+**Categorías activas:** `bestpractices`, `errorprone`, `performance`, `security`, `design`, `codestyle`
+
+```bash
+# Analizar código principal (modo CI — falla si hay violaciones)
+./gradlew pmdMain pmdTest
+
+# Ver reporte HTML
+open build/reports/pmd/main.html
+```
+
+### Task combinado
+
+```bash
+# Ejecuta los 3 checks en orden (equivalente al job CI)
+./gradlew codeQuality
+```
+
+> **Flujo recomendado antes de hacer push:**
+> ```bash
+> ./gradlew rewriteRun spotlessApply   # aplica correcciones automáticas
+> ./gradlew codeQuality                # verifica que todo pasa
+> ./gradlew clean check                # tests + cobertura
+> ```
+
+---
+
+## Operación con Docker
+
+### Dockerfile (build multi-etapa)
+
+El `Dockerfile` usa un build en dos etapas:
+
+1. **Etapa build:** imagen `gradle:8.13.0-jdk21` — compila y empaqueta el jar
+2. **Etapa runtime:** imagen `eclipse-temurin:21-jre-jammy` — solo el JRE, imagen final liviana (~200MB)
+
+Características de seguridad:
+- Corre con usuario no-root (`appuser`)
+- Healthcheck integrado
+- Sin herramientas de build en la imagen final
 
 ```bash
 # Construir la imagen
-docker build -t microservicio-usuarios:latest .
+docker build -t alumnos-app:latest .
 
 # Ejecutar el contenedor
-docker run -p 8000:8000 microservicio-usuarios:latest
+docker run -d \
+  --name alumnos-app \
+  -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  alumnos-app:latest
 
-# Ver logs
-docker logs microservicio-usuarios
-
-# Inspeccionar la imagen
-docker inspect microservicio-usuarios:latest
+# Ver estado del healthcheck
+docker inspect --format='{{.State.Health.Status}}' alumnos-app
 ```
 
----
-
-## 🎼 Orquestación — Docker Compose
-
-Docker Compose permite levantar y gestionar múltiples contenedores como un sistema coordinado. En este proyecto orquesta:
-
-| Servicio | Puerto | Propósito |
-|----------|--------|-----------|
-| `usuarios-api` | 8000 | Microservicio principal |
-| `test-runner` | — | Ejecutar tests (solo en perfil `testing`) |
-
-### Características de la orquestación
-
-- **Restart policy:** `unless-stopped` — el contenedor se reinicia automáticamente si falla
-- **Health check:** Docker Compose monitorea el estado del servicio cada 30 segundos
-- **Red interna:** los servicios se comunican a través de `devops-network` (bridge)
-- **Profiles:** el runner de tests solo se activa en CI, no en producción
-
-### Comandos de orquestación
+### Docker Compose
 
 ```bash
-# Levantar el entorno completo
-docker compose up -d
-
-# Levantar + ejecutar tests
-docker compose --profile testing up
-
-# Ver estado de los servicios
-docker compose ps
-
-# Ver logs en tiempo real
-docker compose logs -f usuarios-api
-
-# Detener y limpiar
-docker compose down
+docker compose up -d        # levantar en background
+docker compose logs -f      # ver logs en tiempo real
+docker compose ps           # ver estado de servicios
+docker compose down -v      # detener y limpiar volúmenes
 ```
+
+> La aplicación estará disponible en `http://localhost:8080` una vez que el healthcheck reporte `healthy` (~30 segundos).
 
 ---
 
-##  Pruebas Automatizadas
+## API Reference
 
-Las pruebas se ejecutan en el **Job 1** del pipeline (primer paso), garantizando que ningún código sin pruebas llegue a las etapas siguientes.
-
-### Framework y cobertura
-
-- **Framework:** pytest + pytest-cov
-- **Ubicación:** `tests/test_users.py`
-- **Cobertura medida:** reporte por terminal en cada ejecución del pipeline
-
-### Casos de prueba
-
-| Test | Qué verifica |
-|------|-------------|
-| `test_listar_usuarios_vacio` | GET /users retorna lista vacía |
-| `test_crear_usuario` | POST /users crea correctamente |
-| `test_obtener_usuario_existente` | GET /users/{id} retorna el usuario |
-| `test_obtener_usuario_no_existente` | GET /users/999 retorna 404 |
-| `test_actualizar_usuario` | PUT /users/{id} actualiza datos |
-| `test_eliminar_usuario` | DELETE /users/{id} elimina |
-
-### Política de calidad
-
-- El pipeline **bloquea el merge** si algún test falla
-- Se requiere que **todos los tests pasen** (no hay excepciones)
-- El linting con `flake8` también bloquea si hay errores de sintaxis
-
----
-
-##  Análisis de Seguridad — Snyk
-
-El análisis de seguridad corre en el **Job 2**, después de los tests y **antes** del build de Docker. Esto garantiza que no se construya ni despliegue una imagen con vulnerabilidades conocidas.
-
-### Cómo funciona el bloqueo
-
-```yaml
-args: --severity-threshold=high
-```
-
-- **LOW / MEDIUM:** el pipeline continúa con advertencia
-- **HIGH / CRITICAL:** ❌ el pipeline se detiene — no se hace build ni deploy
-
-### Herramientas de seguridad configuradas
-
-| Herramienta | Qué escanea | Cuándo corre |
-|-------------|------------|--------------|
-| **Snyk** | Vulnerabilidades en dependencias Python | En cada push/PR |
-| **Dependabot** | Actualizaciones de dependencias | Cada lunes |
-
-### Configurar el token de Snyk
-
-1. Crear cuenta gratuita en [snyk.io](https://snyk.io) con tu cuenta de GitHub
-2. Ir a **Account Settings → API Token** y copiar el token
-3. En GitHub: **Settings → Secrets and variables → Actions → New secret**
-4. Nombre: `SNYK_TOKEN`, valor: el token copiado
-
----
-
-##  Trazabilidad y Calidad
-
-Cada ejecución del pipeline genera un **resumen de trazabilidad** visible en la pestaña Actions de GitHub:
+### Base URL
 
 ```
-══════════════════════════════════════
-  TRAZABILIDAD DEL PIPELINE
-══════════════════════════════════════
-  Repo     : TANIAHR02/devops-gitflow-demo
-  Commit   : abc123def456...
-  Branch   : develop
-  Actor    : TANIAHR02
-  Fecha    : 2025-05-14 15:30:00 UTC
-  Job      : 12345678
-══════════════════════════════════════
+http://localhost:8080/alumnos
 ```
 
-### Cómo se garantiza la calidad en cada etapa
+### Endpoints
 
-```
-Código → Linting → Tests → Seguridad → Build → Deploy → Smoke Test
-  ↑         ↑        ↑        ↑          ↑        ↑         ↑
- Dev      flake8   pytest    Snyk     Docker   Compose   curl/HTTP
-```
+| Método | Ruta | Descripción | Body |
+|---|---|---|---|
+| `GET` | `/alumnos` | Listar todos los alumnos | — |
+| `POST` | `/alumnos` | Crear un alumno | `{"nombre":"Juan","apellido":"Pérez"}` |
+| `PUT` | `/alumnos/{id}` | Actualizar un alumno | `{"nombre":"Juan","apellido":"Soto"}` |
+| `DELETE` | `/alumnos/{id}` | Eliminar un alumno | — |
+| `GET` | `/alumnos/export` | Exportar alumnos a CSV | — |
+| `POST` | `/alumnos/import` | Importar alumnos desde CSV | `Juan,Pérez\nAna,López` |
 
-Ninguna etapa puede saltarse. El encadenamiento `needs:` en el workflow garantiza el orden y el bloqueo ante fallos.
-
-### Artefactos generados por el pipeline
-
-| Artefacto | Retención | Contenido |
-|-----------|-----------|-----------|
-| `snyk-security-report` | 30 días | Reporte JSON de vulnerabilidades |
-| `docker-image` | 7 días | Imagen Docker comprimida (.tar.gz) |
-
----
-
-##  Cómo ejecutar localmente
-
-### Sin Docker
+### Ejemplos con curl
 
 ```bash
-# Clonar repo
-git clone https://github.com/TANIAHR02/devops-gitflow-demo.git
-cd devops-gitflow-demo
+# Crear alumno
+curl -X POST http://localhost:8080/alumnos \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Juan","apellido":"Pérez"}'
 
-# Crear entorno virtual (Windows)
-python -m venv venv
-venv\Scripts\activate
+# Listar alumnos
+curl http://localhost:8080/alumnos
 
-# Instalar dependencias
-pip install -r requirements.txt
+# Actualizar alumno (id=1)
+curl -X PUT http://localhost:8080/alumnos/1 \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Juan","apellido":"Soto"}'
 
-# Ejecutar la API
-uvicorn main:app --reload
+# Eliminar alumno (id=1)
+curl -X DELETE http://localhost:8080/alumnos/1
 
-# Ejecutar tests
-pytest tests/ -v
+# Exportar CSV
+curl http://localhost:8080/alumnos/export
+
+# Importar CSV
+curl -X POST http://localhost:8080/alumnos/import \
+  -H "Content-Type: text/plain" \
+  -d 'Juan,Pérez
+Ana,López'
 ```
 
-### Con Docker Compose
+---
+
+## Pirámide de tests
+
+El proyecto implementa una pirámide de tests completa con 5 capas:
+
+```
+                    ╔══════════════════════╗
+                    ║   CONTRACT TESTS     ║  3 contratos
+                    ║  Spring Cloud        ║  (producer side)
+                    ╚══════════════════════╝
+                  ╔════════════════════════════╗
+                  ║     ACCEPTANCE TESTS       ║  7 escenarios
+                  ║       Cucumber BDD         ║  E2E con HTTP real
+                  ╚════════════════════════════╝
+              ╔══════════════════════════════════════╗
+              ║        INTEGRATION TESTS             ║
+              ║  @WebMvcTest (8) + @SpringBootTest(2)║
+              ╚══════════════════════════════════════╝
+          ╔══════════════════════════════════════════════╗
+          ║           REPOSITORY TESTS                   ║
+          ║           @DataJpaTest (6)                   ║
+          ╚══════════════════════════════════════════════╝
+      ╔══════════════════════════════════════════════════════╗
+      ║                  UNIT TESTS                          ║
+      ║   AlumnoServiceTest(5) + AlumnoMapperTest(4)         ║
+      ║   GlobalExceptionHandlerTest(2)  = 11 tests          ║
+      ╚══════════════════════════════════════════════════════╝
+```
+
+### Capa 1 — Unit Tests (11 tests)
+
+Tests rápidos, sin Spring context, con mocks de Mockito.
+
+| Clase de test | Tests | Qué verifica |
+|---|---|---|
+| `AlumnoServiceTest` | 5 | Lógica de negocio: listar, crear, actualizar, eliminar |
+| `AlumnoMapperTest` | 4 | Conversión `Alumno` ↔ `AlumnoEntity`, incluyendo nulos |
+| `GlobalExceptionHandlerTest` | 2 | Handler de excepciones retorna HTTP 500 con mensaje |
 
 ```bash
-# Levantar todo
-docker compose up -d
+./gradlew test --tests "cl.duocuc.alumnos.AlumnoServiceTest"
+```
 
-# Verificar que corre
-curl http://localhost:8000/health
+### Capa 2 — Repository Tests (6 tests)
 
-# Ver la API en el navegador
-# http://localhost:8000/docs
+Tests con `@DataJpaTest` — levanta solo el contexto JPA con H2 en memoria.
+
+| Clase de test | Tests | Qué verifica |
+|---|---|---|
+| `AlumnoRepositoryTest` | 6 | save, findAll, findById, deleteById, update contra H2 real |
+
+### Capa 3 — Integration Tests (10 tests)
+
+| Clase de test | Anotación | Tests | Qué verifica |
+|---|---|---|---|
+| `AlumnoControllerTest` | `@WebMvcTest` | 8 | Todos los endpoints REST con MockMvc |
+| `DemoApplicationTest` | `@SpringBootTest` | 2 | Contexto completo levanta sin errores |
+
+### Capa 4 — Acceptance Tests / BDD (7 escenarios)
+
+Tests escritos en Gherkin con Cucumber. Levantan el servidor completo y hacen llamadas HTTP reales.
+
+| Escenario | Qué verifica |
+|---|---|
+| Listar alumnos cuando no hay ninguno | GET /alumnos retorna lista vacía |
+| Crear un alumno exitosamente | POST /alumnos persiste y retorna el alumno |
+| Listar alumnos después de crear uno | Flujo crear → listar |
+| Actualizar un alumno existente | PUT /alumnos/{id} modifica el recurso |
+| Eliminar un alumno existente | DELETE /alumnos/{id} elimina el recurso |
+| Exportar alumnos a CSV | GET /alumnos/export retorna formato CSV |
+| Importar alumnos desde CSV | POST /alumnos/import procesa el CSV |
+
+### Capa 5 — Contract Tests (3 contratos)
+
+Tests de contrato con Spring Cloud Contract (producer side).
+
+| Contrato | Qué verifica |
+|---|---|
+| `listar_alumnos.groovy` | GET /alumnos retorna JSON array |
+| `crear_alumno.groovy` | POST /alumnos retorna alumno con id numérico |
+| `exportar_csv.groovy` | GET /alumnos/export retorna texto plano |
+
+```bash
+# Todos los tests + cobertura
+./gradlew clean test jacocoTestReport
+
+# Build completo incluyendo contratos
+./gradlew clean generateContractTests contractTest test jacocoTestReport check
 ```
 
 ---
 
-##  Uso de IA
+## Cobertura y análisis estático
 
-En el desarrollo de este proyecto se utilizó **Claude (Anthropic)** como apoyo para:
+### JaCoCo — Cobertura de código
 
-- Generación del esqueleto del `Dockerfile` y `docker-compose.yml`
-- Estructura inicial del workflow de GitHub Actions
+El build falla si la cobertura baja del **80%** en instrucciones y ramas.
 
+```bash
+./gradlew jacocoTestReport
+open build/reports/jacoco/test/html/index.html
+```
 
-Todo el contenido fue revisado, adaptado y validado por el equipo. Las justificaciones técnicas, decisiones de arquitectura (elección de Docker Compose sobre Kubernetes, estrategia multi-stage, política de bloqueo de Snyk) y reflexiones individuales fueron redactadas por los integrantes sin asistencia de IA.
+### PIT — Mutation Testing
 
-**Referencia de uso de IA:** https://bibliotecas.duoc.cl/ia
+Verifica la calidad real de los tests mutando el código. El build falla si el mutation score baja del **80%**.
 
-## Reflexiones Individuales
-## Tania Herrera:
-Durante esta actividad aprendí a trabajar con Docker, Docker Compose y GitHub Actions para automatizar pruebas, seguridad y despliegues. También entendí mejor cómo funciona un pipeline CI/CD y la importancia de revisar el código antes de realizar un despliegue.
+```bash
+./gradlew pitest
+open build/reports/pitest/index.html
+```
 
-Una de las dificultades fue configurar herramientas como Snyk y SonarCloud, ya que aparecieron errores relacionados con tokens, permisos y configuración de los workflows. Esto me ayudó a aprender a revisar errores y buscar soluciones sin afectar partes que ya estaban funcionando.
+### SonarCloud — SAST
 
-Mi aporte al proyecto fue participar en la configuración del pipeline, integrar pruebas automáticas, realizar validaciones de seguridad y apoyar en la documentación. Esta experiencia me permitió entender mejor cómo se aplica DevOps en un proyecto real y la importancia de la automatización y la calidad del software.
+Análisis de seguridad, bugs y code smells. El pipeline bloquea si el Quality Gate falla.
 
-## Camila Armijo:
-Durante esta actividad aprendí cómo funciona un proceso DevOps y la importancia de revisar cada etapa antes del despliegue. También pude conocer el uso de Docker Compose y entender mejor cómo se conectan los servicios dentro del proyecto.
-
-Una de las dificultades fue interpretar algunos errores y revisar que el despliegue y las pruebas funcionaran correctamente. Esto ayudó a mejorar la validación del proyecto.
-
-Mi aporte estuvo en la revisión de resultados, validación del funcionamiento del sistema y apoyo en la documentación y evidencias del trabajo realizado.
+```bash
+./gradlew sonar \
+  -Dsonar.token=<tu-token> \
+  -Dsonar.organization=<tu-org>
+```
 
 ---
 
-*Última actualización: 2026 — DOY0101 Ingeniería DevOps — EP2*
+## CI/CD
+
+El pipeline tiene **5 jobs secuenciales**. Cada job solo corre si el anterior pasa.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  JOB 0: Code Quality                                            │
+│  ├── OpenRewrite dry-run  (falla si hay recetas pendientes)     │
+│  ├── Spotless check       (falla si el formato no es correcto)  │
+│  ├── PMD main + test      (falla si hay violaciones de reglas)  │
+│  └── Artefacto: pmd-report                                      │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ (solo si calidad pasa)
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  JOB 1: Build & Test                                            │
+│  ├── ./gradlew clean check jacocoTestReport                     │
+│  ├── Cobertura JaCoCo ≥ 80%                                     │
+│  └── Artefactos: jacoco-report, test-results, cucumber-report   │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ (solo si tests pasan)
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  JOB 2: Security Analysis                                       │
+│  ├── SonarCloud (SAST) — Quality Gate bloquea si falla         │
+│  └── Snyk (SCA) — Bloquea si hay vulnerabilidades HIGH/CRITICAL │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ (solo si seguridad pasa)
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  JOB 3: Docker Build & Push                                     │
+│  ├── Build imagen multi-stage (gradle → jre)                   │
+│  ├── Push a GitHub Container Registry (GHCR)                   │
+│  └── Tags: latest (main), sha-XXXXX, branch-name               │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ (solo en push a main)
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  JOB 4: Deploy — environment: production                        │
+│  ├── docker compose up -d --build                               │
+│  ├── Health check: espera estado "healthy"                      │
+│  └── Smoke test: curl /alumnos                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Secrets requeridos en GitHub
+
+| Secret | Descripción |
+|---|---|
+| `SONAR_TOKEN` | Token de autenticación de SonarCloud |
+| `SONAR_ORGANIZATION` | Organización en SonarCloud |
+| `SNYK_TOKEN` | Token de autenticación de Snyk |
+
+> `GITHUB_TOKEN` es generado automáticamente por GitHub Actions.
+
+---
+
+## Orquestación con Kubernetes
+
+```
+k8s/
+├── deployment.yaml   # 2 réplicas, RollingUpdate, health checks, límites de recursos
+├── service.yaml      # ClusterIP en puerto 80 → 8080
+├── hpa.yaml          # HorizontalPodAutoscaler: 2-5 réplicas según CPU/memoria
+└── secret.yaml       # Plantilla de secrets (NO commitear valores reales)
+```
+
+- **Alta disponibilidad:** 2 réplicas mínimas con `RollingUpdate` (sin downtime)
+- **Escalabilidad automática:** HPA escala de 2 a 5 pods según carga (CPU > 70%, memoria > 80%)
+- **Seguridad:** usuario no-root, `allowPrivilegeEscalation: false`, capabilities dropeadas
+
+```bash
+kubectl apply -f k8s/
+kubectl get pods -l app=alumnos-app
+kubectl get hpa alumnos-app-hpa
+```
+
+---
+
+## Estructura del proyecto
+
+```
+version00/
+├── .github/
+│   ├── workflows/ci.yml            ← Pipeline CI/CD (5 jobs)
+│   └── dependabot.yml
+├── config/
+│   └── pmd/
+│       └── ruleset.xml             ← Reglas PMD personalizadas
+├── k8s/                            ← Manifiestos Kubernetes
+├── src/
+│   ├── main/java/cl/duocuc/alumnos/
+│   │   ├── domain/                 ← Capa de dominio (núcleo)
+│   │   ├── application/            ← Casos de uso
+│   │   ├── config/                 ← Configuración transversal
+│   │   └── infrastructure/         ← Adaptadores (REST, JPA, config)
+│   └── test/java/cl/duocuc/alumnos/
+│       ├── AlumnoServiceTest.java
+│       ├── config/
+│       ├── contract/
+│       ├── cucumber/
+│       └── infrastructure/
+├── build.gradle                    ← Gradle + plugins de calidad
+├── Dockerfile                      ← Multi-stage build
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## Uso de Inteligencia Artificial
+
+| Herramienta | Uso |
+|---|---|
+| Kiro (Amazon) | Generación de código base, configuración de plugins Gradle, estructura de tests |
+| — | Todas las decisiones de arquitectura, justificaciones técnicas y reflexiones son propias del equipo |
+
+> Todo contenido generado con IA fue revisado, validado y adaptado por el equipo.
+> Referencia: https://bibliotecas.duoc.cl/ia
+
+---
+
+## Reflexiones individuales
+
+### Integrante 1
+
+> *[Escribir aquí la reflexión personal sobre el aprendizaje obtenido en este proyecto: qué fue lo más desafiante, qué conceptos de DevOps quedaron más claros, y cuál fue tu contribución específica al equipo. Mínimo 150 palabras. Sin uso de IA.]*
+
+### Integrante 2
+
+> *[Escribir aquí la reflexión personal sobre el aprendizaje obtenido en este proyecto: qué fue lo más desafiante, qué conceptos de DevOps quedaron más claros, y cuál fue tu contribución específica al equipo. Mínimo 150 palabras. Sin uso de IA.]*
+
+---
+
+## Licencia
+
+MIT

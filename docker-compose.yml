@@ -1,74 +1,68 @@
-version: "3.9"
-
 services:
-  # ── Microservicio principal ───────────────────────────────────────
-  usuarios-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: microservicio-usuarios
-    image: microservicio-usuarios:latest
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_ENV=production
-      - APP_PORT=8000
+  mysql:
+    image: mysql:8.0
+    container_name: alumnos-mysql
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    environment:
+      MYSQL_DATABASE: alumnosdb
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3306:3306"
     volumes:
-      - app-data:/app/data
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - alumnos-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
-        limits:
-          cpus: "0.50"
-          memory: 256M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-    networks:
-      - devops-network
-    labels:
-      - "com.devops.service=usuarios-api"
-      - "com.devops.version=1.0.0"
-      - "com.devops.team=DOY0101"
-
-  # ── Servicio de pruebas (solo en CI/testing) ─────────────────────
-  test-runner:
+          cpus: '0.25'
+          memory: 256M
+        limits:
+          cpus: '0.50'
+          memory: 512M
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: test-runner
-    command: ["pytest", "tests/", "-v", "--tb=short"]
+    image: alumnos-app:latest
+    container_name: alumnos-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
     environment:
-      - APP_ENV=testing
-    volumes:
-      - app-data:/app/data
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/alumnosdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - alumnos-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/alumnos"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
-        limits:
-          cpus: "0.25"
-          memory: 128M
         reservations:
-          cpus: "0.10"
-          memory: 64M
-    networks:
-      - devops-network
-    profiles:
-      - testing
-
-# ── Volúmenes ──────────────────────────────────────────────────────
+          cpus: '0.25'
+          memory: 256M
+        limits:
+          cpus: '0.50'
+          memory: 512M
 volumes:
-  app-data:
-    driver: local
-
-# ── Redes ─────────────────────────────────────────────────────────
+  mysql_data:
 networks:
-  devops-network:
-    driver: bridge
-    name: devops-network
+  alumnos-network:
