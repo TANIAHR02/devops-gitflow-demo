@@ -31,7 +31,7 @@
         <tomcat.version>10.1.54</tomcat.version>
 
         <!-- Versiones de plugins externos (no gestionados por el parent) -->
-        <jacoco.version>0.8.13</jacoco.version>
+        <jacoco.version>0.8.15</jacoco.version>
         <pitest.version>1.18.2</pitest.version>
         <pitest-junit5.version>1.2.1</pitest-junit5.version>
         <spring-cloud-contract.version>4.2.1</spring-cloud-contract.version>
