@@ -36,7 +36,7 @@
         <pitest-junit5.version>1.2.1</pitest-junit5.version>
         <spring-cloud-contract.version>4.2.1</spring-cloud-contract.version>
         <openrewrite.version>7.32.0</openrewrite.version>
-        <spotless.version>2.43.0</spotless.version>
+        <spotless.version>3.7.0</spotless.version>
         <pmd.version>3.26.0</pmd.version>
         <cucumber.version>7.20.1</cucumber.version>
         <junit-platform.version>1.11.4</junit-platform.version>
