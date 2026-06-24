@@ -697,3 +697,18 @@ version00/
 ## Licencia
 
 MIT
+
+## ✍️ Reflexiones Individuales — EP3
+
+### Tania Herrera
+
+Durante el desarrollo de esta evaluación pude comprender en profundidad qué significa la observabilidad en un entorno DevOps real. Configurar Amazon CloudWatch para recibir métricas y logs del cluster EKS fue un desafío que me permitió entender que no basta con desplegar una aplicación — es fundamental saber qué está pasando dentro de ella en todo momento. El proceso de crear el cluster EKS desde cero usando scripts automatizados me mostró la potencia de la infraestructura como código, donde cada paso queda documentado y es reproducible. Lo más valioso fue ver cómo el pipeline CI/CD integra calidad, seguridad y despliegue en una sola cadena automatizada, donde una falla en cualquier etapa detiene todo el proceso, protegiendo el entorno productivo.
+
+### Camila Armijo
+
+En esta evaluación aprendí que la observabilidad no es opcional en DevOps — es una necesidad para operar sistemas confiables. Implementar el dashboard de CloudWatch con métricas de CPU, memoria, tiempo de despliegue y cobertura de pruebas me permitió entender cómo los equipos técnicos toman decisiones basadas en datos reales. La parte más desafiante fue entender la arquitectura de Kubernetes en AWS y cómo los pods, deployments y services se relacionan dentro del cluster EKS. También comprendí la importancia de las políticas de cumplimiento automatizadas con SonarQube, Snyk y JaCoCo.
+
+---
+
+*Uso de IA: Se utilizó Claude (Anthropic) como apoyo para redacción y estructura técnica. Referencia: https://bibliotecas.duoc.cl/ia*
+
